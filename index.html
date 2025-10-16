@@ -64,12 +64,12 @@
     .hl{background:#fff7cc} /* resalte de fila */
     .table-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 
-    /* Logo del autor */
+    /* Logo del autor (centrado) */
     .logo-uacj{
       height:56px;
       width:auto;
       display:block;
-      margin:4px 0 10px 0;
+      margin:4px auto 10px; /* <-- centra horizontalmente */
       object-fit:contain;
     }
   </style>
@@ -91,10 +91,10 @@
     <section class="grid">
       <!-- Datos del autor -->
       <article class="card stack">
-        <!-- LOGO agregado arriba del título -->
+        <!-- LOGO agregado arriba del título (ruta corregida a tu repo actual) -->
         <img
           class="logo-uacj"
-          src="https://marioduranf47-hue.github.io/Interfaz_PA66_Pruebe/Logo_UACJ.png"
+          src="https://marioduranf47-hue.github.io/Modelado-e-Interpolaci-n-del-Comportamiento-Mec-nico-de-la-PA66-IM-en-Funci-n-de-la-Temperatura/Logo_UACJ.png"
           alt="Logo UACJ" />
 
         <h2>Datos del autor</h2>
@@ -461,10 +461,9 @@
     /* === Interpolación directa σ(ε) y “inversa” ε(σ) sobre la curva interpolada === */
     function sigmaFromEps(curve, eps){
       if(!curve || !curve.data || !curve.data.length) return null;
-      const arr = curve.data;         // arr ordenado por x (= ε)
+      const arr = curve.data;
       if (eps <= arr[0].x) return arr[0].y;
       if (eps >= arr.at(-1).x) return arr.at(-1).y;
-      // búsqueda binaria
       let lo=0, hi=arr.length-1;
       while(hi-lo>1){
         const mid=(lo+hi)>>1;
@@ -478,8 +477,7 @@
 
     function epsFromSigma(curve, sig){
       if(!curve || !curve.data || !curve.data.length) return null;
-      const arr = curve.data;         // y suele ser monótono creciente
-      // buscamos segmento donde y cruza sig
+      const arr = curve.data;
       for(let i=0;i<arr.length-1;i++){
         const y0=arr[i].y, y1=arr[i+1].y;
         if ((sig>=y0 && sig<=y1) || (sig<=y0 && sig>=y1)){
@@ -488,21 +486,20 @@
           return x0 + t*(x1 - x0);
         }
       }
-      // fuera de rango → devolvemos extremo más cercano
       return (Math.abs(sig-arr[0].y) < Math.abs(sig-arr.at(-1).y)) ? arr[0].x : arr.at(-1).x;
     }
 
-    function highlightClosestRow(value, by='x'){ // by: 'x' o 'y'
+    function highlightClosestRow(value, by='x'){
       const rows = Array.from(tblBody.querySelectorAll('tr'));
       if (!rows.length) return;
       rows.forEach(r=>r.classList.remove('hl'));
-      let best=null, bestDist=Infinity, bestEl=null;
+      let bestEl=null, bestDist=Infinity;
       rows.forEach(r=>{
         const eps=parseFloat(r.children[1].textContent);
         const sig=parseFloat(r.children[2].textContent);
         const v = (by==='x') ? eps : sig;
         const d = Math.abs(v - value);
-        if(d<bestDist){ bestDist=d; best=v; bestEl=r; }
+        if(d<bestDist){ bestDist=d; bestEl=r; }
       });
       if (bestEl){ bestEl.classList.add('hl'); bestEl.scrollIntoView({block:'center',behavior:'smooth'}); }
     }
