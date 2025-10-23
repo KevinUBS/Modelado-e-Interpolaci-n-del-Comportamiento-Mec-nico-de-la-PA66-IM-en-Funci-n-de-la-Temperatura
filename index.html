@@ -43,7 +43,7 @@
     .grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:16px}
     .muted{color:var(--muted)} .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
-    select,input[type="number"]{appearance:none;width:220px;padding:.75rem .9rem;border-radius:14px;border:1px solid var(--border);
+    select,input[type="number"]{appearance:none;width:220px;padding:.6rem .9rem;border-radius:14px;border:1px solid var(--border);
       background:color-mix(in hsl,var(--surface),transparent 20%);color:var(--text)}
     .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:14px;border:1px solid var(--border);
       background:color-mix(in hsl,var(--surface),transparent 10%);color:inherit;cursor:pointer;text-decoration:none;box-shadow:var(--shadow-md)}
@@ -64,14 +64,14 @@
     .hl{background:#fff7cc}
     .table-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 
-    /* ===== Estilos del card de Autores ===== */
+    /* ===== Autores (logo centrado y grande) ===== */
     .authors-card{
       font-size:.95rem;
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       text-align:center; min-height:100%;
     }
     .authors-card .uacj-logo{
-      width:168px; height:auto; display:block; margin:0 auto 16px; /* doble tamaño + centrado */
+      width:168px; height:auto; display:block; margin:0 auto 16px;
     }
     .authors-card a{color:#2563eb;text-decoration:underline}
   </style>
@@ -86,7 +86,7 @@
       <span class="pill">PA66 IM</span>
       <h1 id="titleH1" style="margin-left:10px">Modelalo e interpolación del comportamiento mecánico de la PA66 IM en función de la temperatura</h1>
 
-      <!-- Botón de idioma (empuja a la derecha) -->
+      <!-- Botón de idioma -->
       <button id="langToggle" class="btn" style="margin-left:auto">Cambiar a inglés</button>
 
       <span id="repoBadge" class="muted">GitHub Pages • CSV externo</span>
@@ -138,7 +138,8 @@
           </div>
           <button id="interp" class="btn">Interpolar</button>
         </div>
-        <div id="hint" class="muted" style="margin-top:6px"></div>
+        <!-- data-kind controla el texto actual (range|interp|error) -->
+        <div id="hint" class="muted" data-kind="range" style="margin-top:6px"></div>
       </article>
     </section>
 
@@ -304,21 +305,23 @@
       document.getElementById('qEps').placeholder = t.placeholderEps;
       document.getElementById('qSig').placeholder = t.placeholderSig;
 
-      // Hint inicial si no hay otro mensaje
-      if (!document.getElementById('hint').textContent.trim()){
-        document.getElementById('hint').textContent = t.simHintRange;
+      // Hint (mensaje de rango o de interpolación)
+      const hintEl = document.getElementById('hint');
+      if (hintEl.dataset.kind === 'range' || !hintEl.textContent.trim()) {
+        hintEl.textContent = t.simHintRange;
+      } else if (hintEl.dataset.kind === 'interp' && lastInterpolated) {
+        hintEl.textContent = t.interpUsing(lastInterpolated.t1, lastInterpolated.t2);
       }
 
-      // Refrescar leyendas de ejes si hay gráfica
+      // Ejes del chart
       if (chart){
         chart.options.scales.x.title.text = t.xAxis;
         chart.options.scales.y.title.text = t.yAxis;
         chart.update();
       }
 
-      // Actualizar prefijo de curvas mostradas
+      // Curvas seleccionadas y meta de tabla
       updatePickedLabel();
-      // Actualizar metadatos de tabla si existe
       if (lastInterpolated){
         document.getElementById('tblMeta').textContent = t.pointsMeta(lastInterpolated.T, lastInterpolated.data.length);
       }
@@ -385,6 +388,7 @@
       if (host) {
         host.textContent = msg;
         host.style.color = isError ? '#b91c1c' : '';
+        if (isError) host.dataset.kind = 'error'; // marca como error para no sobreescribir
       }
     }
 
@@ -447,8 +451,11 @@
             fillSelect(selA, temps, temps[0]);
             fillSelect(selB, temps, temps[temps.length - 1]);
             compareCurves();
-            // Mensaje inicial dependerá del idioma
-            showHint(I18N[LANG].simHintRange);
+
+            // Mensaje inicial (rango) en el idioma actual
+            const hintEl = document.getElementById('hint');
+            hintEl.dataset.kind = 'range';
+            hintEl.textContent = I18N[LANG].simHintRange;
           } catch (err) {
             showHint('Error leyendo CSV: ' + err.message, true);
           }
@@ -574,15 +581,6 @@
       };
     }
 
-    function buildCurveDatasets(T, raw, color){
-      const dense = pchipSample(raw, DENSE_N);
-      return [
-        lineDataset(`${T} °C (línea)`, dense, color),
-        pointsDataset(`${T} °C`, subsampleEven(raw,RAW_SHOW), color),
-        knotDataset(`${T} °C`, makeKnotsFromDense(dense), color)
-      ];
-    }
-
     function makeChart(datasets){
       if(chart) chart.destroy();
       chart = new Chart(canvas, { type:'line', data:{datasets}, options: chartOptionsFor(datasets) });
@@ -634,7 +632,7 @@
       lastInterpolated={T:Tstar,data,t1,t2}; return lastInterpolated;
     }
 
-    /* === Interpolación directa σ(ε) y “inversa” ε(σ) sobre la curva interpolada === */
+    /* === Interpolación directa σ(ε) y “inversa” ε(σ) === */
     function sigmaFromEps(curve, eps){
       if(!curve || !curve.data || !curve.data.length) return null;
       const arr = curve.data;
@@ -712,10 +710,16 @@
     /* === Eventos === */
     document.getElementById('compare').addEventListener('click', compareCurves);
     document.getElementById('interp').addEventListener('click', ()=>{
-      const T=Number(tTarget.value); if(!Number.isFinite(T)){showHint(LANG==='es'?'Ingresa una temperatura objetivo.':'Enter a target temperature.', true);return;}
+      const T=Number(tTarget.value);
+      if(!Number.isFinite(T)){
+        showHint(LANG==='es'?'Ingresa una temperatura objetivo.':'Enter a target temperature.', true);
+        return;
+      }
       try{
         const res=interpolateAtTemp(T);
-        document.getElementById('hint').textContent = I18N[LANG].interpUsing(res.t1, res.t2);
+        const hintEl = document.getElementById('hint');
+        hintEl.dataset.kind = 'interp';
+        hintEl.textContent = I18N[LANG].interpUsing(res.t1, res.t2);
         compareCurves();
         renderInterpTable(res);
         tableCard.scrollIntoView({behavior:'smooth'});
@@ -723,20 +727,18 @@
     });
 
     btnDownload.addEventListener('click', ()=> lastInterpolated && downloadInterpCSV(lastInterpolated));
-
     btnSolveSigma.addEventListener('click', ()=>{
       const eps = Number(qEps.value);
       if(!Number.isFinite(eps) || !lastInterpolated){ outSigma.textContent=''; return; }
       const sig = sigmaFromEps(lastInterpolated, eps);
-      outSigma.textContent = Number.isFinite(sig) ? (LANG==='es' ? `→ σ ≈ ${sig.toFixed(4)}` : `→ σ ≈ ${sig.toFixed(4)}`) : (LANG==='es'?'Fuera de rango':'Out of range');
+      outSigma.textContent = Number.isFinite(sig) ? `→ σ ≈ ${sig.toFixed(4)}` : (LANG==='es'?'Fuera de rango':'Out of range');
       highlightClosestRow(eps,'x');
     });
-
     btnSolveEps.addEventListener('click', ()=>{
       const sig = Number(qSig.value);
       if(!Number.isFinite(sig) || !lastInterpolated){ outEps.textContent=''; return; }
       const eps = epsFromSigma(lastInterpolated, sig);
-      outEps.textContent = Number.isFinite(eps) ? (LANG==='es' ? `→ ε ≈ ${eps.toFixed(6)}` : `→ ε ≈ ${eps.toFixed(6)}`) : (LANG==='es'?'Fuera de rango':'Out of range');
+      outEps.textContent = Number.isFinite(eps) ? `→ ε ≈ ${eps.toFixed(6)}` : (LANG==='es'?'Fuera de rango':'Out of range');
       highlightClosestRow(sig,'y');
     });
 
@@ -751,4 +753,3 @@
   </script>
 </body>
 </html>
-
