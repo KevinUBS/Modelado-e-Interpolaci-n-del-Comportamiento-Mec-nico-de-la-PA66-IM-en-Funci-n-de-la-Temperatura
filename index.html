@@ -61,7 +61,7 @@
     table{width:100%;border-collapse:collapse;font-size:14px;color:#111}
     thead th{position:sticky;top:0;background:#fafafa;border-bottom:1px solid #e5e7eb;padding:.6rem .75rem;text-align:left}
     tbody td{border-bottom:1px solid #f1f5f9;padding:.45rem .75rem}
-    .hl{background:#fff7cc} /* resalte de fila */
+    .hl{background:#fff7cc}
     .table-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 
     /* ===== Estilos del card de Autores ===== */
@@ -87,7 +87,8 @@
     <section class="grid">
       <!-- Autores -->
       <article class="card stack authors-card">
-        <img class="uacj-logo" src="https://www.uacj.mx/wp-content/uploads/2021/08/Logo-UACJ-azul.png" alt="UACJ">
+        <!-- Logo local con fallback a SVG embebido -->
+        <img id="uacjLogo" class="uacj-logo" src="Logo_UACJ.png" alt="UACJ">
         <h2>Autores</h2>
         <div>
           <div><strong>Kevin Uriel Burrola Saenz</strong></div>
@@ -185,6 +186,19 @@
 
   <script>
   (function(){
+    /* === Fallback del logo (si no carga el PNG local) === */
+    const UACJ_LOGO_FALLBACK = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50" viewBox="0 0 200 50">
+        <rect width="100%" height="100%" fill="white"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+              font-family="Segoe UI, Roboto, Arial" font-size="28" fill="#003087" letter-spacing="2">UACJ</text>
+      </svg>
+    `);
+    const logoEl = document.getElementById('uacjLogo');
+    if (logoEl) {
+      logoEl.addEventListener('error', () => { logoEl.src = UACJ_LOGO_FALLBACK; }, { once: true });
+    }
+
     /* === Calidad === */
     const DPR = Math.max(2, window.devicePixelRatio || 1);
 
