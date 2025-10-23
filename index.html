@@ -64,14 +64,10 @@
     .hl{background:#fff7cc} /* resalte de fila */
     .table-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 
-    /* Logo del autor (centrado) */
-    .logo-uacj{
-      height:56px;
-      width:auto;
-      display:block;
-      margin:4px auto 10px; /* centra */
-      object-fit:contain;
-    }
+    /* ===== Estilos del card de Autores ===== */
+    .authors-card{font-size:.95rem}
+    .authors-card .uacj-logo{width:84px;height:auto;display:block}
+    .authors-card a{color:#2563eb;text-decoration:underline}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -82,27 +78,29 @@
   <header>
     <div class="container row" style="align-items:center">
       <span class="pill">PA66 IM</span>
-      <h1 style="margin-left:10px">Modelado e Interpolación del Comportamiento Mecánico de la PA66 IM en Función de la Temperatura</h1>
+      <h1 style="margin-left:10px">Curvas con PCHIP y nudos</h1>
       <span class="muted" style="margin-left:auto">GitHub Pages • CSV externo</span>
     </div>
   </header>
 
   <main class="container stack">
     <section class="grid">
-      <!-- Datos del autor -->
-      <article class="card stack">
-        <!-- LOGO arriba del título (ruta RELATIVA correcta) -->
-        <img
-          class="logo-uacj"
-          src="Logo_UACJ.png"
-          alt="Logo UACJ" />
-
-        <h2>Datos del autor</h2>
+      <!-- Autores -->
+      <article class="card stack authors-card">
+        <img class="uacj-logo" src="https://www.uacj.mx/wp-content/uploads/2021/08/Logo-UACJ-azul.png" alt="UACJ">
+        <h2>Autores</h2>
         <div>
           <div><strong>Kevin Uriel Burrola Saenz</strong></div>
           <div><a href="mailto:al244149@alumnos.uacj.mx">al244149@alumnos.uacj.mx</a></div>
-          <div>Universidad Autónoma de Ciudad Juárez</div>
-          <div>Maestría en Ingeniería Industrial</div>
+          <br>
+          <div><strong>Iván Juan Carlos Pérez-Olguín</strong></div>
+          <div><a href="mailto:ivan.perez@uacj.mx">ivan.perez@uacj.mx</a></div>
+          <br>
+          <div><strong>Luis Alberto Rodríguez-Picón</strong></div>
+          <div><a href="mailto:luis.picon@uacj.mx">luis.picon@uacj.mx</a></div>
+          <br>
+          <div><strong>Luis Carlos Mendez-González</strong></div>
+          <div><a href="mailto:luis.mendez@uacj.mx">luis.mendez@uacj.mx</a></div>
         </div>
         <p class="muted" style="margin-top:8px">
           En caso de detectar algún error o de tener una propuesta de mejora,
@@ -458,12 +456,13 @@
       lastInterpolated={T:Tstar,data,t1,t2}; return lastInterpolated;
     }
 
-    /* === Interpolación directa e inversa */
+    /* === Interpolación directa σ(ε) y “inversa” ε(σ) sobre la curva interpolada === */
     function sigmaFromEps(curve, eps){
       if(!curve || !curve.data || !curve.data.length) return null;
-      const arr = curve.data;
+      const arr = curve.data;         // arr ordenado por x (= ε)
       if (eps <= arr[0].x) return arr[0].y;
       if (eps >= arr.at(-1).x) return arr.at(-1).y;
+      // búsqueda binaria
       let lo=0, hi=arr.length-1;
       while(hi-lo>1){
         const mid=(lo+hi)>>1;
@@ -477,7 +476,8 @@
 
     function epsFromSigma(curve, sig){
       if(!curve || !curve.data || !curve.data.length) return null;
-      const arr = curve.data;
+      const arr = curve.data;         // y suele ser monótono creciente
+      // buscamos segmento donde y cruza sig
       for(let i=0;i<arr.length-1;i++){
         const y0=arr[i].y, y1=arr[i+1].y;
         if ((sig>=y0 && sig<=y1) || (sig<=y0 && sig>=y1)){
@@ -486,20 +486,22 @@
           return x0 + t*(x1 - x0);
         }
       }
+      // fuera de rango → devolvemos extremo más cercano
       return (Math.abs(sig-arr[0].y) < Math.abs(sig-arr.at(-1).y)) ? arr[0].x : arr.at(-1).x;
     }
 
-    function highlightClosestRow(value, by='x'){
+    function highlightClosestRow(value, by='x'){ // by: 'x' o 'y'
+      // resalta la fila cuyo ε (o σ) esté más cerca del valor consultado
       const rows = Array.from(tblBody.querySelectorAll('tr'));
       if (!rows.length) return;
       rows.forEach(r=>r.classList.remove('hl'));
-      let bestEl=null, bestDist=Infinity;
+      let best=null, bestDist=Infinity, bestEl=null;
       rows.forEach(r=>{
         const eps=parseFloat(r.children[1].textContent);
         const sig=parseFloat(r.children[2].textContent);
         const v = (by==='x') ? eps : sig;
         const d = Math.abs(v - value);
-        if(d<bestDist){ bestDist=d; bestEl=r; }
+        if(d<bestDist){ bestDist=d; best=v; bestEl=r; }
       });
       if (bestEl){ bestEl.classList.add('hl'); bestEl.scrollIntoView({block:'center',behavior:'smooth'}); }
     }
