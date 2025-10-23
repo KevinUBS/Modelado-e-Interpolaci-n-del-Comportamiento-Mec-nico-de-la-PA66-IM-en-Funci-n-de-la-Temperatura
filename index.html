@@ -61,13 +61,16 @@
     table{width:100%;border-collapse:collapse;font-size:14px;color:#111}
     thead th{position:sticky;top:0;background:#fafafa;border-bottom:1px solid #e5e7eb;padding:.6rem .75rem;text-align:left}
     tbody td{border-bottom:1px solid #f1f5f9;padding:.45rem .75rem}
-    .hl{background:#fff7cc} /* resalte de fila */
+    .hl{background:#fff7cc}
     .table-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 
-    /* ===== Estilos del card de Autores ===== */
+    /* Autores */
     .authors-card{font-size:.95rem}
     .authors-card .uacj-logo{width:84px;height:auto;display:block}
     .authors-card a{color:#2563eb;text-decoration:underline}
+
+    /* Toggle idioma */
+    #langToggle{margin-left:auto}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -77,9 +80,10 @@
 
   <header>
     <div class="container row" style="align-items:center">
-      <span class="pill">PA66 IM</span>
-      <h1 style="margin-left:10px">Curvas con PCHIP y nudos</h1>
-      <span class="muted" style="margin-left:auto">GitHub Pages • CSV externo</span>
+      <span class="pill" data-i18n="pill">PA66 IM</span>
+      <h1 id="titleMain" style="margin-left:10px">Curvas con PCHIP y nudos</h1>
+      <span class="muted" id="hdrMeta" style="margin-left:auto">GitHub Pages • CSV externo</span>
+      <button id="langToggle" class="btn" aria-label="Cambiar idioma">🌐 Cambiar a inglés</button>
     </div>
   </header>
 
@@ -88,7 +92,7 @@
       <!-- Autores -->
       <article class="card stack authors-card">
         <img class="uacj-logo" src="https://www.uacj.mx/wp-content/uploads/2021/08/Logo-UACJ-azul.png" alt="UACJ">
-        <h2>Autores</h2>
+        <h2 id="authorsTitle">Autores</h2>
         <div>
           <div><strong>Kevin Uriel Burrola Saenz</strong></div>
           <div><a href="mailto:al244149@alumnos.uacj.mx">al244149@alumnos.uacj.mx</a></div>
@@ -102,7 +106,7 @@
           <div><strong>Luis Carlos Mendez-González</strong></div>
           <div><a href="mailto:luis.mendez@uacj.mx">luis.mendez@uacj.mx</a></div>
         </div>
-        <p class="muted" style="margin-top:8px">
+        <p class="muted" id="authorsNote" style="margin-top:8px">
           En caso de detectar algún error o de tener una propuesta de mejora,
           comunicarte al correo descrito en esta sección.
         </p>
@@ -110,10 +114,10 @@
 
       <!-- Comparar -->
       <article class="card stack">
-        <h2>Visualizar curvas (comparar 2)</h2>
+        <h2 id="cmpTitle">Visualizar curvas (comparar 2)</h2>
         <div class="row">
-          <div><label for="selA" class="muted">Temperatura A (°C)</label><br><select id="selA"></select></div>
-          <div><label for="selB" class="muted">Temperatura B (°C)</label><br><select id="selB"></select></div>
+          <div><label for="selA" class="muted" id="lblA">Temperatura A (°C)</label><br><select id="selA"></select></div>
+          <div><label for="selB" class="muted" id="lblB">Temperatura B (°C)</label><br><select id="selB"></select></div>
           <button id="compare" class="btn primary">Comparar curvas</button>
         </div>
         <div id="picked" class="muted" style="margin-top:6px"></div>
@@ -121,9 +125,10 @@
 
       <!-- Interpolación -->
       <article class="card stack">
-        <h2>Interpolación por temperatura</h2>
+        <h2 id="itpTitle">Interpolación por temperatura</h2>
         <div class="row">
-          <div><label for="tTarget" class="muted">Temperatura objetivo (°C)</label><br>
+          <div>
+            <label for="tTarget" class="muted" id="lblTarget">Temperatura objetivo (°C)</label><br>
             <input id="tTarget" type="number" step="0.1" placeholder="Ej. 75" />
           </div>
           <button id="interp" class="btn">Interpolar</button>
@@ -135,32 +140,31 @@
     <!-- Gráfica -->
     <section class="card">
       <div class="row" style="align-items:center">
-        <h2 class="grow" style="margin:0">Gráfica</h2>
-        <span class="muted">Esfuerzo (σ) vs. Deformación (ε)</span>
+        <h2 class="grow" style="margin:0" id="chartTitle">Gráfica</h2>
+        <span class="muted" id="chartSubtitle">Esfuerzo (σ) vs. Deformación (ε)</span>
       </div>
       <canvas id="chart"></canvas>
     </section>
 
-    <!-- Tabla (debajo de la gráfica) + consultas puntuales -->
+    <!-- Tabla + consultas -->
     <section class="card stack" id="tableCard" style="display:none">
       <div class="table-actions">
-        <h2 style="margin:0">Tabla – Interpolación</h2>
+        <h2 style="margin:0" id="tblTitle">Tabla – Interpolación</h2>
         <div class="row" style="align-items:center">
           <span class="muted" id="tblMeta"></span>
           <button class="btn" id="btnDownload">Descargar CSV interpolado</button>
         </div>
       </div>
 
-      <!-- Mini laboratorio de consultas -->
       <div class="row">
         <div>
-          <label class="muted" for="qEps">Calcular σ a partir de ε</label><br>
+          <label class="muted" for="qEps" id="lblQEps">Calcular σ a partir de ε</label><br>
           <input id="qEps" type="number" step="0.0001" placeholder="ε (ej. 0.1234)" />
           <button class="btn" id="btnSolveSigma">σ(ε)</button>
           <span class="muted" id="outSigma"></span>
         </div>
         <div>
-          <label class="muted" for="qSig">Calcular ε a partir de σ</label><br>
+          <label class="muted" for="qSig" id="lblQSig">Calcular ε a partir de σ</label><br>
           <input id="qSig" type="number" step="0.01" placeholder="σ (ej. 42.5)" />
           <button class="btn" id="btnSolveEps">ε(σ)</button>
           <span class="muted" id="outEps"></span>
@@ -170,7 +174,11 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>#</th><th>Deformación ε</th><th>Esfuerzo σ</th></tr>
+            <tr>
+              <th id="thIdx">#</th>
+              <th id="thEps">Deformación ε</th>
+              <th id="thSig">Esfuerzo σ</th>
+            </tr>
           </thead>
           <tbody id="tblBody"></tbody>
         </table>
@@ -181,6 +189,90 @@
   <!-- Ruta ABSOLUTA a tu CSV en GitHub Pages -->
   <script>
     const CSV_URL = 'https://marioduranf47-hue.github.io/Interfaz_PA66_Pruebe/curvas_PA66_tidy.csv';
+
+    /* ====== I18N ====== */
+    const I18N = {
+      es: {
+        mainTitle: 'Curvas con PCHIP y nudos',
+        headerMeta: 'GitHub Pages • CSV externo',
+        toggleTo: '🌐 Cambiar a inglés',
+        authorsTitle: 'Autores',
+        authorsNote: 'En caso de detectar algún error o de tener una propuesta de mejora, comunicarte al correo descrito en esta sección.',
+        cmpTitle: 'Visualizar curvas (comparar 2)',
+        lblA: 'Temperatura A (°C)',
+        lblB: 'Temperatura B (°C)',
+        compare: 'Comparar curvas',
+        itpTitle: 'Interpolación por temperatura',
+        lblTarget: 'Temperatura objetivo (°C)',
+        interpolate: 'Interpolar',
+        chartTitle: 'Gráfica',
+        chartSubtitle: 'Esfuerzo (σ) vs. Deformación (ε)',
+        axisX: 'Deformación (ε)',
+        axisY: 'Esfuerzo (σ)',
+        tableTitle: 'Tabla – Interpolación',
+        download: 'Descargar CSV interpolado',
+        lblQEps: 'Calcular σ a partir de ε',
+        lblQSig: 'Calcular ε a partir de σ',
+        phEps: 'ε (ej. 0.1234)',
+        phSig: 'σ (ej. 42.5)',
+        thIdx: '#',
+        thEps: 'Deformación ε',
+        thSig: 'Esfuerzo σ',
+        picked: (a,b) => `Curvas: ${a}${b ? ' | '+b : ''}`,
+        hintRange: 'Este simulador funciona con temperaturas desde -40 hasta 150 °C.',
+        hintInterp: (t1,t2) => `Interpolado usando: ${t1} °C y ${t2} °C`,
+        errorCsv: (m) => 'Error leyendo CSV: ' + m,
+        errorDl: (m) => 'No se pudo descargar el CSV: ' + m,
+        errorNoTemp: 'No se detectaron temperaturas.',
+        errorNeedTarget: 'Ingresa una temperatura objetivo.',
+        line: '(línea)',
+        points: '• puntos',
+        knots: '• nudos',
+        tblMeta: (T,n) => `T = ${T} °C • ${n} puntos (ε, σ)`,
+        solveSig: (v)=> `→ σ ≈ ${v}`,
+        solveEps: (v)=> `→ ε ≈ ${v}`,
+      },
+      en: {
+        mainTitle: 'Curves with PCHIP and knots',
+        headerMeta: 'GitHub Pages • External CSV',
+        toggleTo: '🌐 Switch to Spanish',
+        authorsTitle: 'Authors',
+        authorsNote: 'If you find any error or have an improvement proposal, please contact the email listed in this section.',
+        cmpTitle: 'View curves (compare 2)',
+        lblA: 'Temperature A (°C)',
+        lblB: 'Temperature B (°C)',
+        compare: 'Compare curves',
+        itpTitle: 'Interpolation by temperature',
+        lblTarget: 'Target temperature (°C)',
+        interpolate: 'Interpolate',
+        chartTitle: 'Chart',
+        chartSubtitle: 'Stress (σ) vs. Strain (ε)',
+        axisX: 'Strain (ε)',
+        axisY: 'Stress (σ)',
+        tableTitle: 'Table – Interpolation',
+        download: 'Download interpolated CSV',
+        lblQEps: 'Compute σ from ε',
+        lblQSig: 'Compute ε from σ',
+        phEps: 'ε (e.g., 0.1234)',
+        phSig: 'σ (e.g., 42.5)',
+        thIdx: '#',
+        thEps: 'Strain ε',
+        thSig: 'Stress σ',
+        picked: (a,b) => `Curves: ${a}${b ? ' | '+b : ''}`,
+        hintRange: 'This simulator works with temperatures from -40 to 150 °C.',
+        hintInterp: (t1,t2) => `Interpolated using: ${t1} °C and ${t2} °C`,
+        errorCsv: (m) => 'CSV read error: ' + m,
+        errorDl: (m) => 'Could not download CSV: ' + m,
+        errorNoTemp: 'No temperatures detected.',
+        errorNeedTarget: 'Enter a target temperature.',
+        line: '(line)',
+        points: '• points',
+        knots: '• knots',
+        tblMeta: (T,n) => `T = ${T} °C • ${n} points (ε, σ)`,
+        solveSig: (v)=> `→ σ ≈ ${v}`,
+        solveEps: (v)=> `→ ε ≈ ${v}`,
+      }
+    };
   </script>
 
   <script>
@@ -204,6 +296,7 @@
     const btnCompare=document.getElementById('compare'), tTarget=document.getElementById('tTarget'), btnInterp=document.getElementById('interp');
     const picked=document.getElementById('picked'), hint=document.getElementById('hint');
     const canvas=document.getElementById('chart');
+    const langToggle=document.getElementById('langToggle');
 
     /* Tabla & consultas */
     const tableCard=document.getElementById('tableCard');
@@ -214,7 +307,78 @@
     const outSigma=document.getElementById('outSigma'), outEps=document.getElementById('outEps');
     const btnSolveSigma=document.getElementById('btnSolveSigma'), btnSolveEps=document.getElementById('btnSolveEps');
 
+    /* Títulos/labels estáticos */
+    const titleMain=document.getElementById('titleMain');
+    const hdrMeta=document.getElementById('hdrMeta');
+    const authorsTitle=document.getElementById('authorsTitle');
+    const authorsNote=document.getElementById('authorsNote');
+    const cmpTitle=document.getElementById('cmpTitle');
+    const lblA=document.getElementById('lblA');
+    const lblB=document.getElementById('lblB');
+    const itpTitle=document.getElementById('itpTitle');
+    const lblTarget=document.getElementById('lblTarget');
+    const chartTitle=document.getElementById('chartTitle');
+    const chartSubtitle=document.getElementById('chartSubtitle');
+    const tblTitle=document.getElementById('tblTitle');
+    const lblQEps=document.getElementById('lblQEps');
+    const lblQSig=document.getElementById('lblQSig');
+    const thIdx=document.getElementById('thIdx');
+    const thEps=document.getElementById('thEps');
+    const thSig=document.getElementById('thSig');
+
     let seriesMap=new Map(), temps=[], chart, lastInterpolated=null;
+
+    /* === Idioma === */
+    let LANG = localStorage.getItem('lang') || 'es';
+    function t(key,...args){
+      const entry = I18N[LANG][key];
+      return (typeof entry === 'function') ? entry(...args) : entry;
+    }
+    function applyI18nStatic(){
+      document.documentElement.lang = (LANG === 'es' ? 'es' : 'en');
+      titleMain.textContent = t('mainTitle');
+      hdrMeta.textContent = t('headerMeta');
+      authorsTitle.textContent = t('authorsTitle');
+      authorsNote.textContent = t('authorsNote');
+      cmpTitle.textContent = t('cmpTitle');
+      lblA.textContent = t('lblA');
+      lblB.textContent = t('lblB');
+      btnCompare.textContent = t('compare');
+      itpTitle.textContent = t('itpTitle');
+      lblTarget.textContent = t('lblTarget');
+      btnInterp.textContent = t('interpolate');
+      chartTitle.textContent = t('chartTitle');
+      chartSubtitle.textContent = t('chartSubtitle');
+      tblTitle.textContent = t('tableTitle');
+      btnDownload.textContent = t('download');
+      lblQEps.textContent = t('lblQEps');
+      lblQSig.textContent = t('lblQSig');
+      qEps.placeholder = t('phEps');
+      qSig.placeholder = t('phSig');
+      thIdx.textContent = t('thIdx');
+      thEps.textContent = t('thEps');
+      thSig.textContent = t('thSig');
+      langToggle.textContent = t('toggleTo');
+      // refrescar gráfica para ejes/tooltip
+      if(chart){ chart.options = chartOptionsFor(chart.config.data.datasets); chart.update(); }
+      // volver a pintar textos dinámicos si existen
+      if (picked.dataset.a || picked.dataset.b){
+        const a = picked.dataset.a || '';
+        const b = picked.dataset.b || '';
+        picked.textContent = t('picked', a, b);
+      }
+      if(lastInterpolated){
+        hint.textContent = t('hintInterp', lastInterpolated.t1, lastInterpolated.t2);
+        renderInterpTable(lastInterpolated);
+        compareCurves(); // para que cambien labels de datasets
+      }
+    }
+
+    langToggle.addEventListener('click', ()=>{
+      LANG = (LANG === 'es' ? 'en' : 'es');
+      localStorage.setItem('lang', LANG);
+      applyI18nStatic();
+    });
 
     /* === Utils === */
     const PALETTE=["#1f77b4","#ff7f0e","#2ca02c","#d62728","#9467bd","#8c564b","#e377c2","#7f7f7f","#bcbd22","#17becf"]; let colorIdx=0; const nextColor=()=>PALETTE[colorIdx++%PALETTE.length];
@@ -286,16 +450,16 @@
             const rows = res.data.filter(r => Object.keys(r||{}).length > 0);
             if (!rows.length) throw new Error('CSV vacío o encabezado incorrecto.');
             detectFromTidy(rows);
-            if (!temps.length) throw new Error('No se detectaron temperaturas.');
+            if (!temps.length) throw new Error(t('errorNoTemp'));
             fillSelect(selA, temps, temps[0]);
             fillSelect(selB, temps, temps[temps.length - 1]);
             compareCurves();
-            showHint('Este simulador funciona con temperaturas desde -40 hasta 150 °C.');
+            showHint(t('hintRange'));
           } catch (err) {
-            showHint('Error leyendo CSV: ' + err.message, true);
+            showHint(t('errorCsv', err.message), true);
           }
         },
-        error: (err) => showHint('No se pudo descargar el CSV: ' + err.message, true)
+        error: (err) => showHint(t('errorDl', err.message), true)
       });
     }
 
@@ -361,9 +525,9 @@
     }
     const lineDataset=(label,data,color,dashed=false)=>({type:'line',label,data,borderColor:color,backgroundColor:color,borderWidth:2,
       cubicInterpolationMode:undefined,tension:0,pointRadius:0,borderDash:dashed?[6,4]:undefined,fill:false,showLine:true});
-    const pointsDataset=(label,data,color)=>({type:'line',label:label+' • puntos',data,borderColor:'transparent',backgroundColor:color,pointBorderColor:color,
+    const pointsDataset=(label,data,color)=>({type:'line',label:label+' '+t('points'),data,borderColor:'transparent',backgroundColor:color,pointBorderColor:color,
       pointBackgroundColor:color,pointRadius:RAW_SIZE,pointHoverRadius:RAW_SIZE+1.2,showLine:false});
-    const knotDataset=(label,data,color)=>({type:'scatter',label:label+' • nudos',data,showLine:false,pointRadius:KNOT_SIZE,
+    const knotDataset=(label,data,color)=>({type:'scatter',label:label+' '+t('knots'),data,showLine:false,pointRadius:KNOT_SIZE,
       pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:1.5});
 
     function makeKnotsFromDense(dense){
@@ -395,22 +559,28 @@
             labels:{
               color:'#333',
               usePointStyle:true,
-              // Mostrar solo un label por curva (oculta "• puntos" y "• nudos")
+              // Ocultar datasets con "•" (puntos/nudos) para mostrar un label por curva
               filter: (item) => {
                 const text = item.text || '';
                 return !text.includes('•');
               }
             }
           },
-          tooltip:{backgroundColor:'rgba(20,20,28,.9)',borderColor:'rgba(255,255,255,.08)',borderWidth:1,
-                   callbacks:{label:(c)=>`(ε=${c.parsed.x.toFixed(4)}, σ=${c.parsed.y.toFixed(2)})`}},
+          tooltip:{
+            backgroundColor:'rgba(20,20,28,.9)',
+            borderColor:'rgba(255,255,255,.08)',
+            borderWidth:1,
+            callbacks:{
+              label:(c)=>`(ε=${c.parsed.x.toFixed(4)}, σ=${c.parsed.y.toFixed(2)})`
+            }
+          },
           decimation:{enabled:true,algorithm:'lttb',samples:1500}
         },
         scales:{
           x:{type:'linear',min:0,max:xMaxNice,ticks:{stepSize:xStep,color:'#333'},grid:{color:'#e6e6e6'},
-             title:{display:true,text:'Deformación (ε)',color:'#333'}},
+             title:{display:true,text:t('axisX'),color:'#333'}},
           y:{type:'linear',min:0,max:yMaxNice,ticks:{stepSize:yStep,color:'#333'},grid:{color:'#e6e6e6'},
-             title:{display:true,text:'Esfuerzo (σ)',color:'#333'}}
+             title:{display:true,text:t('axisY'),color:'#333'}}
         },
         elements:{point:{radius:0}}
       };
@@ -419,7 +589,7 @@
     function buildCurveDatasets(T, raw, color){
       const dense = pchipSample(raw, DENSE_N);
       return [
-        lineDataset(`${T} °C (línea)`, dense, color),
+        lineDataset(`${T} °C ${t('line')}`, dense, color),
         pointsDataset(`${T} °C`, subsampleEven(raw,RAW_SHOW), color),
         knotDataset(`${T} °C`, makeKnotsFromDense(dense), color)
       ];
@@ -440,7 +610,11 @@
         ds.unshift( lineDataset(`Interp ${lastInterpolated.T} °C`, lastInterpolated.data, c, true) );
         ds.unshift( knotDataset(`Interp ${lastInterpolated.T} °C`, makeKnotsFromDense(lastInterpolated.data), c) );
       }
-      picked.textContent=`Curvas: ${Number.isFinite(a)?a+' °C':''} ${Number.isFinite(b)?' | '+b+' °C':''}`;
+      const aText = Number.isFinite(a) ? `${a} °C` : '';
+      const bText = Number.isFinite(b) ? `${b} °C` : '';
+      picked.dataset.a = aText;
+      picked.dataset.b = bText;
+      picked.textContent = t('picked', aText, bText);
       makeChart(ds);
     }
 
@@ -467,13 +641,12 @@
       lastInterpolated={T:Tstar,data,t1,t2}; return lastInterpolated;
     }
 
-    /* === Interpolación directa σ(ε) y “inversa” ε(σ) sobre la curva interpolada === */
+    /* === Interpolación directa σ(ε) y “inversa” ε(σ) === */
     function sigmaFromEps(curve, eps){
       if(!curve || !curve.data || !curve.data.length) return null;
-      const arr = curve.data;         // arr ordenado por x (= ε)
+      const arr = curve.data;
       if (eps <= arr[0].x) return arr[0].y;
       if (eps >= arr.at(-1).x) return arr.at(-1).y;
-      // búsqueda binaria
       let lo=0, hi=arr.length-1;
       while(hi-lo>1){
         const mid=(lo+hi)>>1;
@@ -481,23 +654,21 @@
       }
       const x0=arr[lo].x,  y0=arr[lo].y;
       const x1=arr[hi].x,  y1=arr[hi].y;
-      const t=(eps-x0)/(x1-x0);
-      return y0 + t*(y1-y0);
+      const tlin=(eps-x0)/(x1-x0);
+      return y0 + tlin*(y1-y0);
     }
 
     function epsFromSigma(curve, sig){
       if(!curve || !curve.data || !curve.data.length) return null;
-      const arr = curve.data;         // y suele ser monótono creciente
-      // buscamos segmento donde y cruza sig
+      const arr = curve.data;
       for(let i=0;i<arr.length-1;i++){
         const y0=arr[i].y, y1=arr[i+1].y;
         if ((sig>=y0 && sig<=y1) || (sig<=y0 && sig>=y1)){
           const x0=arr[i].x, x1=arr[i+1].x;
-          const t=(sig - y0)/(y1 - y0 || 1e-12);
-          return x0 + t*(x1 - x0);
+          const tlin=(sig - y0)/(y1 - y0 || 1e-12);
+          return x0 + tlin*(x1 - x0);
         }
       }
-      // fuera de rango → devolvemos extremo más cercano
       return (Math.abs(sig-arr[0].y) < Math.abs(sig-arr.at(-1).y)) ? arr[0].x : arr.at(-1).x;
     }
 
@@ -525,7 +696,7 @@
         tr.innerHTML = `<td>${idx+1}</td><td>${p.x.toFixed(6)}</td><td>${p.y.toFixed(4)}</td>`;
         tblBody.appendChild(tr);
       });
-      tblMeta.textContent = `T = ${curve.T} °C • ${curve.data.length} puntos (ε, σ)`;
+      tblMeta.textContent = t('tblMeta', curve.T, curve.data.length);
       tableCard.style.display='block';
     }
 
@@ -547,10 +718,10 @@
     /* === Eventos === */
     btnCompare.addEventListener('click', compareCurves);
     btnInterp.addEventListener('click', ()=>{
-      const T=Number(tTarget.value); if(!Number.isFinite(T)){showHint('Ingresa una temperatura objetivo.', true);return;}
+      const T=Number(tTarget.value); if(!Number.isFinite(T)){showHint(t('errorNeedTarget'), true);return;}
       try{
         const res=interpolateAtTemp(T);
-        hint.textContent=`Interpolado usando: ${res.t1} °C y ${res.t2} °C`;
+        hint.textContent=t('hintInterp', res.t1, res.t2);
         compareCurves();
         renderInterpTable(res);
         tableCard.scrollIntoView({behavior:'smooth'});
@@ -563,7 +734,7 @@
       const eps = Number(qEps.value);
       if(!Number.isFinite(eps) || !lastInterpolated){ outSigma.textContent=''; return; }
       const sig = sigmaFromEps(lastInterpolated, eps);
-      outSigma.textContent = Number.isFinite(sig) ? `→ σ ≈ ${sig.toFixed(4)}` : 'Fuera de rango';
+      outSigma.textContent = Number.isFinite(sig) ? t('solveSig', sig.toFixed(4)) : '';
       highlightClosestRow(eps,'x');
     });
 
@@ -571,7 +742,7 @@
       const sig = Number(qSig.value);
       if(!Number.isFinite(sig) || !lastInterpolated){ outEps.textContent=''; return; }
       const eps = epsFromSigma(lastInterpolated, sig);
-      outEps.textContent = Number.isFinite(eps) ? `→ ε ≈ ${eps.toFixed(6)}` : 'Fuera de rango';
+      outEps.textContent = Number.isFinite(eps) ? t('solveEps', eps.toFixed(6)) : '';
       highlightClosestRow(sig,'y');
     });
 
@@ -580,9 +751,9 @@
     window.addEventListener('orientationchange', ()=> chart && chart.resize());
 
     /* === Init === */
+    applyI18nStatic(); // pone textos del idioma guardado
     loadFromUrl(CSV_URL);
   })();
   </script>
 </body>
 </html>
-
