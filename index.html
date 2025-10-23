@@ -45,7 +45,6 @@
     .muted{color:var(--muted)} .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
     select,input[type="number"]{appearance:none;width:220px;padding:.75rem .9rem;border-radius:14px;border:1px solid var(--border);
       background:color-mix(in hsl,var(--surface),transparent 20%);color:var(--text)}
-    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1rem;border-radius:14px;border:1px solid var(--border);
     .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:14px;border:1px solid var(--border);
       background:color-mix(in hsl,var(--surface),transparent 10%);color:inherit;cursor:pointer;text-decoration:none;box-shadow:var(--shadow-md)}
     .btn.primary{background:linear-gradient(180deg,color-mix(in hsl,var(--accent),white 8%),var(--accent));color:var(--accent-ink);
@@ -68,20 +67,10 @@
     /* ===== Estilos del card de Autores ===== */
     .authors-card{
       font-size:.95rem;
-      display:flex;
-      flex-direction:column;
-      align-items:center;     /* centrado horizontal */
-      justify-content:center; /* centrado vertical */
-      text-align:center;
-      min-height:100%;
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       text-align:center; min-height:100%;
     }
     .authors-card .uacj-logo{
-      width:168px;            /* doble tamaño del original (84px -> 168px) */
-      height:auto;
-      display:block;
-      margin:0 auto 16px;     /* centrado + espacio debajo */
       width:168px; height:auto; display:block; margin:0 auto 16px; /* doble tamaño + centrado */
     }
     .authors-card a{color:#2563eb;text-decoration:underline}
@@ -95,8 +84,6 @@
   <header>
     <div class="container row" style="align-items:center">
       <span class="pill">PA66 IM</span>
-      <h1 style="margin-left:10px">Modelalo e interpolación del comportamiento mecánico de la PA66 IM en función de la temperatura</h1>
-      <span class="muted" style="margin-left:auto">GitHub Pages • CSV externo</span>
       <h1 id="titleH1" style="margin-left:10px">Modelalo e interpolación del comportamiento mecánico de la PA66 IM en función de la temperatura</h1>
 
       <!-- Botón de idioma (empuja a la derecha) -->
@@ -110,9 +97,7 @@
     <section class="grid">
       <!-- Autores -->
       <article class="card stack authors-card">
-        <!-- Logo local con fallback a SVG embebido -->
         <img id="uacjLogo" class="uacj-logo" src="Logo_UACJ.png" alt="UACJ">
-        <h2>Autores</h2>
         <h2 id="authorsTitle">Autores</h2>
         <div>
           <div><strong>Kevin Uriel Burrola Saenz</strong></div>
@@ -127,7 +112,6 @@
           <div><strong>Luis Carlos Mendez-González</strong></div>
           <div><a href="mailto:luis.mendez@uacj.mx">luis.mendez@uacj.mx</a></div>
         </div>
-        <p class="muted" style="margin-top:8px">
         <p id="authorsNote" class="muted" style="margin-top:8px">
           En caso de detectar algún error o de tener una propuesta de mejora,
           comunicarte al correo descrito en esta sección.
@@ -136,11 +120,8 @@
 
       <!-- Comparar -->
       <article class="card stack">
-        <h2>Visualizar curvas (comparar 2)</h2>
         <h2 id="compareTitle">Visualizar curvas (comparar 2)</h2>
         <div class="row">
-          <div><label for="selA" class="muted">Temperatura A (°C)</label><br><select id="selA"></select></div>
-          <div><label for="selB" class="muted">Temperatura B (°C)</label><br><select id="selB"></select></div>
           <div><label id="labelA" for="selA" class="muted">Temperatura A (°C)</label><br><select id="selA"></select></div>
           <div><label id="labelB" for="selB" class="muted">Temperatura B (°C)</label><br><select id="selB"></select></div>
           <button id="compare" class="btn primary">Comparar curvas</button>
@@ -150,10 +131,8 @@
 
       <!-- Interpolación -->
       <article class="card stack">
-        <h2>Interpolación por temperatura</h2>
         <h2 id="interpTitle">Interpolación por temperatura</h2>
         <div class="row">
-          <div><label for="tTarget" class="muted">Temperatura objetivo (°C)</label><br>
           <div><label id="targetLabel" class="muted" for="tTarget">Temperatura objetivo (°C)</label><br>
             <input id="tTarget" type="number" step="0.1" placeholder="Ej. 75" />
           </div>
@@ -166,8 +145,6 @@
     <!-- Gráfica -->
     <section class="card">
       <div class="row" style="align-items:center">
-        <h2 class="grow" style="margin:0">Gráfica</h2>
-        <span class="muted">Esfuerzo (σ) vs. Deformación (ε)</span>
         <h2 id="chartTitle" class="grow" style="margin:0">Gráfica</h2>
         <span id="chartSubtitle" class="muted">Esfuerzo (σ) vs. Deformación (ε)</span>
       </div>
@@ -177,7 +154,6 @@
     <!-- Tabla (debajo de la gráfica) + consultas puntuales -->
     <section class="card stack" id="tableCard" style="display:none">
       <div class="table-actions">
-        <h2 style="margin:0">Tabla – Interpolación</h2>
         <h2 id="tableTitle" style="margin:0">Tabla – Interpolación</h2>
         <div class="row" style="align-items:center">
           <span class="muted" id="tblMeta"></span>
@@ -188,18 +164,14 @@
       <!-- Mini laboratorio de consultas -->
       <div class="row">
         <div>
-          <label class="muted" for="qEps">Calcular σ a partir de ε</label><br>
           <label id="labelQEps" class="muted" for="qEps">Calcular σ a partir de ε</label><br>
           <input id="qEps" type="number" step="0.0001" placeholder="ε (ej. 0.1234)" />
-          <button class="btn" id="btnSolveSigma">σ(ε)</button>
           <button id="btnSolveSigma" class="btn">σ(ε)</button>
           <span class="muted" id="outSigma"></span>
         </div>
         <div>
-          <label class="muted" for="qSig">Calcular ε a partir de σ</label><br>
           <label id="labelQSigma" class="muted" for="qSig">Calcular ε a partir de σ</label><br>
           <input id="qSig" type="number" step="0.01" placeholder="σ (ej. 42.5)" />
-          <button class="btn" id="btnSolveEps">ε(σ)</button>
           <button id="btnSolveEps" class="btn">ε(σ)</button>
           <span class="muted" id="outEps"></span>
         </div>
@@ -208,7 +180,6 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>#</th><th>Deformación ε</th><th>Esfuerzo σ</th></tr>
             <tr><th id="thIndex">#</th><th id="thEps">Deformación ε</th><th id="thSig">Esfuerzo σ</th></tr>
           </thead>
           <tbody id="tblBody"></tbody>
@@ -476,7 +447,6 @@
             fillSelect(selA, temps, temps[0]);
             fillSelect(selB, temps, temps[temps.length - 1]);
             compareCurves();
-            showHint('Este simulador funciona con temperaturas desde -40 hasta 150 °C.');
             // Mensaje inicial dependerá del idioma
             showHint(I18N[LANG].simHintRange);
           } catch (err) {
@@ -584,7 +554,6 @@
             labels:{
               color:'#333',
               usePointStyle:true,
-              // Mostrar solo un label por curva (oculta "• puntos" y "• nudos")
               filter: (item) => {
                 const text = item.text || '';
                 return !text.includes('•');
@@ -597,10 +566,8 @@
         },
         scales:{
           x:{type:'linear',min:0,max:xMaxNice,ticks:{stepSize:xStep,color:'#333'},grid:{color:'#e6e6e6'},
-             title:{display:true,text:'Deformación (ε)',color:'#333'}},
              title:{display:true,text:t.xAxis,color:'#333'}},
           y:{type:'linear',min:0,max:yMaxNice,ticks:{stepSize:yStep,color:'#333'},grid:{color:'#e6e6e6'},
-             title:{display:true,text:'Esfuerzo (σ)',color:'#333'}}
              title:{display:true,text:t.yAxis,color:'#333'}}
         },
         elements:{point:{radius:0}}
@@ -640,7 +607,6 @@
         ds.unshift( lineDataset(`Interp ${lastInterpolated.T} °C`, lastInterpolated.data, c, true) );
         ds.unshift( knotDataset(`Interp ${lastInterpolated.T} °C`, makeKnotsFromDense(lastInterpolated.data), c) );
       }
-      picked.textContent=`Curvas: ${Number.isFinite(a)?a+' °C':''} ${Number.isFinite(b)?' | '+b+' °C':''}`;
       updatePickedLabel();
       makeChart(ds);
     }
@@ -671,11 +637,9 @@
     /* === Interpolación directa σ(ε) y “inversa” ε(σ) sobre la curva interpolada === */
     function sigmaFromEps(curve, eps){
       if(!curve || !curve.data || !curve.data.length) return null;
-      const arr = curve.data;         // arr ordenado por x (= ε)
       const arr = curve.data;
       if (eps <= arr[0].x) return arr[0].y;
       if (eps >= arr.at(-1).x) return arr.at(-1).y;
-      // búsqueda binaria
       let lo=0, hi=arr.length-1;
       while(hi-lo>1){
         const mid=(lo+hi)>>1;
@@ -689,8 +653,6 @@
 
     function epsFromSigma(curve, sig){
       if(!curve || !curve.data || !curve.data.length) return null;
-      const arr = curve.data;         // y suele ser monótono creciente
-      // buscamos segmento donde y cruza sig
       const arr = curve.data;
       for(let i=0;i<arr.length-1;i++){
         const y0=arr[i].y, y1=arr[i+1].y;
@@ -700,7 +662,6 @@
           return x0 + t*(x1 - x0);
         }
       }
-      // fuera de rango → devolvemos extremo más cercano
       return (Math.abs(sig-arr[0].y) < Math.abs(sig-arr.at(-1).y)) ? arr[0].x : arr.at(-1).x;
     }
 
@@ -728,7 +689,6 @@
         tr.innerHTML = `<td>${idx+1}</td><td>${p.x.toFixed(6)}</td><td>${p.y.toFixed(4)}</td>`;
         tblBody.appendChild(tr);
       });
-      tblMeta.textContent = `T = ${curve.T} °C • ${curve.data.length} puntos (ε, σ)`;
       tblMeta.textContent = I18N[LANG].pointsMeta(curve.T, curve.data.length);
       tableCard.style.display='block';
     }
@@ -741,7 +701,6 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `interpolado_${curve.T}C.csv`;
       const prefix = I18N[LANG].filePrefix;
       a.download = `${prefix}${curve.T}C.csv`;
       document.body.appendChild(a);
@@ -751,15 +710,11 @@
     }
 
     /* === Eventos === */
-    btnCompare.addEventListener('click', compareCurves);
-    btnInterp.addEventListener('click', ()=>{
-      const T=Number(tTarget.value); if(!Number.isFinite(T)){showHint('Ingresa una temperatura objetivo.', true);return;}
     document.getElementById('compare').addEventListener('click', compareCurves);
     document.getElementById('interp').addEventListener('click', ()=>{
       const T=Number(tTarget.value); if(!Number.isFinite(T)){showHint(LANG==='es'?'Ingresa una temperatura objetivo.':'Enter a target temperature.', true);return;}
       try{
         const res=interpolateAtTemp(T);
-        hint.textContent=`Interpolado usando: ${res.t1} °C y ${res.t2} °C`;
         document.getElementById('hint').textContent = I18N[LANG].interpUsing(res.t1, res.t2);
         compareCurves();
         renderInterpTable(res);
@@ -773,7 +728,6 @@
       const eps = Number(qEps.value);
       if(!Number.isFinite(eps) || !lastInterpolated){ outSigma.textContent=''; return; }
       const sig = sigmaFromEps(lastInterpolated, eps);
-      outSigma.textContent = Number.isFinite(sig) ? `→ σ ≈ ${sig.toFixed(4)}` : 'Fuera de rango';
       outSigma.textContent = Number.isFinite(sig) ? (LANG==='es' ? `→ σ ≈ ${sig.toFixed(4)}` : `→ σ ≈ ${sig.toFixed(4)}`) : (LANG==='es'?'Fuera de rango':'Out of range');
       highlightClosestRow(eps,'x');
     });
@@ -782,7 +736,6 @@
       const sig = Number(qSig.value);
       if(!Number.isFinite(sig) || !lastInterpolated){ outEps.textContent=''; return; }
       const eps = epsFromSigma(lastInterpolated, sig);
-      outEps.textContent = Number.isFinite(eps) ? `→ ε ≈ ${eps.toFixed(6)}` : 'Fuera de rango';
       outEps.textContent = Number.isFinite(eps) ? (LANG==='es' ? `→ ε ≈ ${eps.toFixed(6)}` : `→ ε ≈ ${eps.toFixed(6)}`) : (LANG==='es'?'Fuera de rango':'Out of range');
       highlightClosestRow(sig,'y');
     });
