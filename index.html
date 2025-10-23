@@ -390,7 +390,18 @@
         responsive:true, parsing:false, maintainAspectRatio:false, devicePixelRatio:DPR,
         interaction:{mode:'nearest',intersect:false},
         plugins:{
-          legend:{display:true,labels:{color:'#333',usePointStyle:true}},
+          legend:{
+            display:true,
+            labels:{
+              color:'#333',
+              usePointStyle:true,
+              // Mostrar solo un label por curva (oculta "• puntos" y "• nudos")
+              filter: (item) => {
+                const text = item.text || '';
+                return !text.includes('•');
+              }
+            }
+          },
           tooltip:{backgroundColor:'rgba(20,20,28,.9)',borderColor:'rgba(255,255,255,.08)',borderWidth:1,
                    callbacks:{label:(c)=>`(ε=${c.parsed.x.toFixed(4)}, σ=${c.parsed.y.toFixed(2)})`}},
           decimation:{enabled:true,algorithm:'lttb',samples:1500}
@@ -490,18 +501,17 @@
       return (Math.abs(sig-arr[0].y) < Math.abs(sig-arr.at(-1).y)) ? arr[0].x : arr.at(-1).x;
     }
 
-    function highlightClosestRow(value, by='x'){ // by: 'x' o 'y'
-      // resalta la fila cuyo ε (o σ) esté más cerca del valor consultado
+    function highlightClosestRow(value, by='x'){
       const rows = Array.from(tblBody.querySelectorAll('tr'));
       if (!rows.length) return;
       rows.forEach(r=>r.classList.remove('hl'));
-      let best=null, bestDist=Infinity, bestEl=null;
+      let bestEl=null, bestDist=Infinity;
       rows.forEach(r=>{
         const eps=parseFloat(r.children[1].textContent);
         const sig=parseFloat(r.children[2].textContent);
         const v = (by==='x') ? eps : sig;
         const d = Math.abs(v - value);
-        if(d<bestDist){ bestDist=d; best=v; bestEl=r; }
+        if(d<bestDist){ bestDist=d; bestEl=r; }
       });
       if (bestEl){ bestEl.classList.add('hl'); bestEl.scrollIntoView({block:'center',behavior:'smooth'}); }
     }
@@ -575,3 +585,4 @@
   </script>
 </body>
 </html>
+
