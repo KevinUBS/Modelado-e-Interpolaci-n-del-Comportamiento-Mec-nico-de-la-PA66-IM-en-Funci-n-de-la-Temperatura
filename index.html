@@ -65,8 +65,21 @@
     .table-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 
     /* ===== Estilos del card de Autores ===== */
-    .authors-card{font-size:.95rem}
-    .authors-card .uacj-logo{width:84px;height:auto;display:block}
+    .authors-card{
+      font-size:.95rem;
+      display:flex;
+      flex-direction:column;
+      align-items:center;     /* centrado horizontal */
+      justify-content:center; /* centrado vertical */
+      text-align:center;
+      min-height:100%;
+    }
+    .authors-card .uacj-logo{
+      width:168px;            /* doble tamaño del original (84px -> 168px) */
+      height:auto;
+      display:block;
+      margin:0 auto 16px;     /* centrado + espacio debajo */
+    }
     .authors-card a{color:#2563eb;text-decoration:underline}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -599,4 +612,5 @@
   </script>
 </body>
 </html>
+
 
